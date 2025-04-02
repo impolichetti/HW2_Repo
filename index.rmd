@@ -1,5 +1,5 @@
 ---
-title: "Homework 2: Exploring Graphs"
+title: "Homework 2: Option B Finding Communities"
 output: html_notebook
 ---
 
@@ -157,11 +157,6 @@ After testing Leiden and Louvian algorithms, we should use the leiden method sin
 ## Part 2: Seattle
 
 ```{r}
-install.packages("remotes")
-install.packages("CINNA")
-```
-
-```{r}
 library(igraph)
 library(CINNA)
 ```
@@ -171,22 +166,6 @@ GitLink='https://github.com/impolichetti/HW2_Repo/raw/refs/heads/main/SeattleTec
 seattle=read_graph(GitLink,format='graphml')
 ```
 
-```{r}
-set.seed(333)
-sizes(cluster_edge_betweenness(seattle_giant,directed = T))
-```
-
-```{r}
-sizes(cluster_label_prop(seattle_giant, mode = 'out'))
-```
-
-```{r}
-sizes(cluster_infomap(seattle_giant))
-```
-
-```{r}
-modularity(seattle, membership(seattle_gn),directed = FALSE)
-```
 
 ### The Louvian Method
 
@@ -212,6 +191,10 @@ The Louvian and the Leiden methods do not work for directed graphs.
 seattle_giant=CINNA::giant_component_extract(seattle)[[1]]
 summary(seattle_giant)
 ```
+```{r}
+set.seed(333)
+sizes(cluster_edge_betweenness(seattle_giant,directed = T))
+```
 
 ```{r}
 set.seed(332)
@@ -225,6 +208,13 @@ plot(seattle_info, seattle_giant,
 
 ```{r}
 modularity(seattle_giant, membership(seattle_info))
+```
+```{r}
+sizes(cluster_label_prop(seattle_giant, mode = 'out'))
+```
+```{r}
+sizes(cluster_infomap(seattle_giant))
+
 ```
 
 ### Girvan-Newmann
@@ -247,6 +237,7 @@ plot(seattle_gn, seattle,
 ```{r}
 modularity(seattle, membership(seattle_gn),directed = FALSE)
 ```
+
 
 Girvan-Newman solution had a slightly higher modularity. Using this method should be chosen.
 
