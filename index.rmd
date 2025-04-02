@@ -1,0 +1,317 @@
+---
+title: "Homework 2: Exploring Graphs"
+output: html_notebook
+---
+
+## Part 1: Peru
+
+```{r}
+rm(list = ls())
+GitLink='https://github.com/impolichetti/HW2_Repo/raw/refs/heads/main/css_G.graphml'
+```
+
+```{r}
+library(igraph)
+elites=read_graph(GitLink,format='graphml')
+```
+
+```{r}
+summary(elites)
+```
+
+```{r}
+V(elites)$name=V(elites)$id
+```
+
+```{r}
+V(elites)$color[V(elites)$color == ""] <- "black"
+```
+
+```{r}
+unique(V(elites)$color)
+```
+
+```{r}
+set.seed(111)
+plot.igraph(elites)
+```
+
+```{r}
+transitivity(elites,type = "local")
+
+```
+
+```{r}
+transitivity(elites,type = "average")
+
+```
+
+```{r}
+clique_size_counts(elites)
+
+```
+
+```{r}
+largest_cliques(elites)
+```
+
+```{r}
+LCq=largest_cliques(elites)
+par(mfrow = c(1, 3)) 
+plot(elites,main='All network')
+plot(induced_subgraph(elites, LCq[[1]]), main="Largest Clique  (A)")
+plot(induced_subgraph(elites, LCq[[2]]), main="Largest Clique  (B)")
+```
+
+```{r}
+set.seed(123)
+elites_gn <- cluster_edge_betweenness(elites,directed = F)
+```
+
+```{r}
+sizes(elites_gn)
+```
+
+```{r}
+plot(elites_gn, elites,
+     layout = layout_with_kk, 
+     main="Girvan-Newman Solution")
+```
+
+```{r}
+modularity(elites, membership(elites_gn),directed = FALSE)
+```
+
+### The Louvain method
+
+```{r}
+set.seed(321)
+
+elites_lv <- cluster_louvain(elites)
+sizes(elites_lv)
+```
+
+```{r}
+plot(elites_lv, elites,
+     layout = layout_with_kk, 
+     main="Louvain Solution")
+```
+
+```{r}
+modularity(elites, membership(elites_lv),directed = FALSE)
+```
+
+### The Leiden method
+
+```{r}
+elites_ld <- cluster_leiden(elites)
+sizes(elites_ld)
+```
+
+```{r}
+set.seed(123)
+elites_ld_mod <- cluster_leiden(elites,
+                              objective_function ="modularity")
+
+sizes(elites_ld_mod)
+```
+
+```{r}
+plot(elites_ld_mod, elites,
+     layout = layout_with_kk, 
+     main="Leiden Solution-using modularity")
+```
+
+```{r}
+modularity(elites, membership(elites_ld_mod))
+```
+
+So far, the modularity for Louvain is 0.2746776 while the modularity for leiden is 0.288614. Leiden has higher modularity, yet still not very strong.
+
+```{r}
+set.seed(123)
+### Higher resolutions lead to more smaller communities, 
+### while lower resolutions lead to fewer larger communities.
+
+#r = quantile(strength(actors))[2]/(gorder(actors) - 1)
+r=edge_density(elites) 
+elites_ld_cpm <- cluster_leiden(elites,
+                              objective_function ="CPM",
+                              resolution_parameter = r)
+
+sizes(elites_ld_cpm)
+```
+
+```{r}
+plot(elites_ld_cpm, elites,
+     layout = layout_with_kk, 
+     main="Leiden Solution-using Pots Model")
+```
+
+```{r}
+modularity(elites, membership(elites_ld_cpm))
+```
+
+After testing Leiden and Louvian algorithms, we should use the leiden method since it has a larger modularity.
+
+## Part 2: Seattle
+
+```{r}
+install.packages("remotes")
+install.packages("CINNA")
+```
+
+```{r}
+library(igraph)
+library(CINNA)
+```
+
+```{r}
+GitLink='https://github.com/impolichetti/HW2_Repo/raw/refs/heads/main/SeattleTechNetwork.graphml'
+seattle=read_graph(GitLink,format='graphml')
+```
+
+```{r}
+set.seed(333)
+sizes(cluster_edge_betweenness(seattle_giant,directed = T))
+```
+
+```{r}
+sizes(cluster_label_prop(seattle_giant, mode = 'out'))
+```
+
+```{r}
+sizes(cluster_infomap(seattle_giant))
+```
+
+```{r}
+modularity(seattle, membership(seattle_gn),directed = FALSE)
+```
+
+### The Louvian Method
+
+```{r}
+set.seed(321)
+
+seattle_lv <- cluster_louvain(seattle)
+sizes(seattle_lv)
+```
+
+### The Leiden Method
+
+```{r}
+seattle_ld <- cluster_leiden(seattle)
+sizes(seattle_ld)
+```
+
+The Louvian and the Leiden methods do not work for directed graphs.
+
+### infomap
+
+```{r}
+seattle_giant=CINNA::giant_component_extract(seattle)[[1]]
+summary(seattle_giant)
+```
+
+```{r}
+set.seed(332)
+
+seattle_info=cluster_infomap(seattle_giant)
+plot(seattle_info, seattle_giant,
+     vertex.label=V(seattle_giant)$country,
+     layout = layout_nicely, vertex.label.cex=0.5,
+     main="Infomap solution")
+```
+
+```{r}
+modularity(seattle_giant, membership(seattle_info))
+```
+
+### Girvan-Newmann
+
+```{r}
+set.seed(123)
+seattle_gn <- cluster_edge_betweenness(seattle,directed = F)
+```
+
+```{r}
+sizes(seattle_gn)
+```
+
+```{r}
+plot(seattle_gn, seattle,
+     layout = layout_with_kk, 
+     main="Girvan-Newman Solution")
+```
+
+```{r}
+modularity(seattle, membership(seattle_gn),directed = FALSE)
+```
+
+Girvan-Newman solution had a slightly higher modularity. Using this method should be chosen.
+
+## Part 3: Fifa Country Projection
+
+```{r}
+rm(list = ls())
+GitLink='https://github.com/impolichetti/HW2_Repo/raw/refs/heads/main/fifa_country_projection.graphml'
+
+library(igraph)
+fifa=read_graph(GitLink,format='graphml')
+
+V(fifa)$name=V(fifa)$id 
+```
+
+```{r}
+set.seed(111) # use this to get same results as me
+
+plot.igraph(fifa)
+```
+
+### Girvan-Newman Method
+
+```{r}
+set.seed(123)
+fifa_gn <- cluster_edge_betweenness(fifa,directed = F)
+```
+
+```{r}
+sizes(fifa_gn)
+```
+
+```{r}
+plot(fifa_gn, fifa,
+     layout = layout_with_kk, 
+     main="Girvan-Newman Solution")
+```
+
+```{r}
+modularity(fifa, membership(fifa_gn),directed = FALSE)
+```
+
+### Leiden Method
+
+```{r}
+fifa_ld <- cluster_leiden(fifa)
+sizes(fifa_ld)
+```
+
+```{r}
+set.seed(123)
+fifa_ld_mod <- cluster_leiden(fifa,
+                              objective_function ="modularity")
+
+sizes(fifa_ld_mod)
+```
+
+```{r}
+plot(fifa_ld_mod, fifa,
+     layout = layout_with_kk, 
+     main="Leiden Solution-using modularity")
+```
+
+```{r}
+modularity(fifa, membership(fifa_ld_mod))
+```
+
+The modularity for the Girvan-Newman method is 0.01644719, while the modularity for the Leiden method is 0.04542327. The higher modularity is the Leiden method, so this method should be chosen.
