@@ -1,6 +1,8 @@
 ---
-title: "Homework 2: Option B Finding Communities"
-output: html_notebook
+title: 'Homework 2: Option B Finding Communities'
+output:
+  html_document:
+    df_print: paged
 ---
 
 ## Part 1: Peru
@@ -170,17 +172,17 @@ seattle=read_graph(GitLink,format='graphml')
 ### The Louvian Method
 
 ```{r}
-set.seed(321)
+#set.seed(321)
 
-seattle_lv <- cluster_louvain(seattle)
-sizes(seattle_lv)
+#seattle_lv <- cluster_louvain(seattle)
+#sizes(seattle_lv)
 ```
 
 ### The Leiden Method
 
 ```{r}
-seattle_ld <- cluster_leiden(seattle)
-sizes(seattle_ld)
+#seattle_ld <- cluster_leiden(seattle)
+#sizes(seattle_ld)
 ```
 
 The Louvian and the Leiden methods do not work for directed graphs.
